@@ -1,36 +1,31 @@
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
-/**
- * Controller for the index route.
- * @class AppController
- * @method getStatus
- * @method getStats
- */
 class AppController {
   /**
-   * Method for the route GET /status.
-   * Checks the status of the API.
-   * @param {object} _req - The express request object.
-   * @param {object} res - The express response object.
-   * @returns {object} The status code 200 and the status of the API.
+   * should return if Redis is alive and if the DB is alive too
+   * by using the 2 utils created previously:
+   * { "redis": true, "db": true } with a status code 200
    */
-  static getStatus(_req, res) {
-    res.status(200).json({ redis: redisClient.isAlive(), db: dbClient.isAlive() });
+  static getStatus(request, response) {
+    const status = {
+      redis: redisClient.isAlive(),
+      db: dbClient.isAlive(),
+    };
+    response.status(200).send(status);
   }
 
   /**
-   * Method for the route GET /stats.
-   * Checks the stats of the API.
-   * @param {object} _req - The express request object.
-   * @param {object} res - The express response object.
-   * @returns {object} The status code 200 and the stats of the API.
+   * should return the number of users and files in DB:
+   * { "users": 12, "files": 1231 }
+   *  with a status code 200
    */
-  static getStats(_req, res) {
-    Promise.all([dbClient.nbUsers(), dbClient.nbFiles()])
-      .then(([usersCount, filesCount]) => {
-        res.status(200).json({ users: usersCount, files: filesCount });
-      });
+  static async getStats(request, response) {
+    const stats = {
+      users: await dbClient.nbUsers(),
+      files: await dbClient.nbFiles(),
+    };
+    response.status(200).send(stats);
   }
 }
 
